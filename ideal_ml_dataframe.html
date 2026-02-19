@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ideal IPL ML Dataframe Schema</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #f97316;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --accent4: #a855f7;
+    --accent5: #ec4899;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --tag-bg: #1a1a28;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease forwards;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before { content: '//'; opacity: 0.5; }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 600px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stat-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Section groups */
+  .section {
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .section-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--tag-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .section-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  /* Table */
+  .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+  }
+
+  thead th:first-child { color: var(--accent); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  td {
+    padding: 14px 16px;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* Type badges */
+  .type-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .type-str  { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+  .type-int  { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+  .type-float{ background: rgba(249,115,22,0.15);  color: #fdba74; border: 1px solid rgba(249,115,22,0.2); }
+  .type-bool { background: rgba(168,85,247,0.15); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.2); }
+  .type-cat  { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.2); }
+  .type-list { background: rgba(234,179,8,0.15);  color: #fde68a; border: 1px solid rgba(234,179,8,0.2); }
+
+  /* Model tags */
+  .model-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .mtag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .ml  { background: rgba(59,130,246,0.2);  color: #93c5fd; }
+  .dl  { background: rgba(249,115,22,0.2);  color: #fdba74; }
+  .gnn { background: rgba(16,185,129,0.2);  color: #6ee7b7; }
+
+  /* Example value */
+  .example {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  .desc { color: #94a3b8; font-size: 12px; }
+
+  /* Target column highlight */
+  tr.target td { background: rgba(249,115,22,0.05); }
+  tr.target td:first-child { color: #fb923c; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    animation: fadeUp 0.5s ease 0.3s both;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+
+  /* GNN section special */
+  .gnn-note {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #6ee7b7;
+    line-height: 1.6;
+  }
+  .gnn-note strong { color: #34d399; }
+
+  /* Target section */
+  .target-note {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(249,115,22,0.05);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #fdba74;
+    line-height: 1.6;
+  }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px);} to { opacity:1; transform:none;} }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none;} }
+
+  .s1 { animation-delay: 0.3s; }
+  .s2 { animation-delay: 0.4s; }
+  .s3 { animation-delay: 0.5s; }
+  .s4 { animation-delay: 0.6s; }
+  .s5 { animation-delay: 0.7s; }
+  .s6 { animation-delay: 0.8s; }
+  .s7 { animation-delay: 0.9s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Schema Design</div>
+    <h1>Ideal Dataframe for<br><span>IPL Auction Price Prediction</span></h1>
+    <p class="subtitle">A unified feature schema designed for ML, Deep Learning, and Graph Neural Network models — covering player stats, context, team dynamics, and graph relationships.</p>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">42</div><div class="stat-label">Total Columns</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Feature Groups</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-label">Model Types</div></div>
+    <div class="stat"><div class="stat-num">1</div><div class="stat-label">Target Variable</div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="mtag ml">ML</span> Traditional ML (XGBoost, RF, LightGBM)</div>
+    <div class="legend-item"><span class="mtag dl">DL</span> Deep Learning (MLP, LSTM, Transformer)</div>
+    <div class="legend-item"><span class="mtag gnn">GNN</span> Graph Neural Network</div>
+    <div class="legend-item"><span class="type-badge type-str">str</span> String</div>
+    <div class="legend-item"><span class="type-badge type-float">float</span> Float</div>
+    <div class="legend-item"><span class="type-badge type-int">int</span> Integer</div>
+    <div class="legend-item"><span class="type-badge type-bool">bool</span> Boolean</div>
+    <div class="legend-item"><span class="type-badge type-cat">cat</span> Categorical</div>
+    <div class="legend-item"><span class="type-badge type-list">list</span> List / Embedding</div>
+  </div>
+
+  <!-- TARGET -->
+  <div class="section s1">
+    <div class="section-header">
+      <div class="section-dot" style="background:#f97316"></div>
+      <div class="section-title" style="color:#f97316">🎯 Target Variable</div>
+      <div class="section-count">1 column</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr class="target">
+            <td>1</td>
+            <td><strong>auction_price_cr</strong></td>
+            <td><span class="type-badge type-float">float</span></td>
+            <td class="desc">Final auction price in Crore INR. Log-transform recommended for skewed distribution.</td>
+            <td class="example">12.5, 0.20, 2.40</td>
+            <td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="target-note">
+      💡 <strong>Tip:</strong> Also model <code>is_sold</code> (binary) as a classification target, then predict price only for sold players. Use <strong>log1p(auction_price_cr)</strong> as the regression target to normalize the right-skewed distribution.
+    </div>
+  </div>
+
+  <!-- IDENTITY -->
+  <div class="section s2">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3b82f6"></div>
+      <div class="section-title" style="color:#3b82f6">🪪 Player Identity</div>
+      <div class="section-count">6 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>player_id</td><td><span class="type-badge type-str">str</span></td><td class="desc">Unique player identifier (slug or hash) — node ID for GNN.</td><td class="example">"ms_dhoni_ind"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>3</td><td>player_name</td><td><span class="type-badge type-str">str</span></td><td class="desc">Full player name. Used for lookup, not as a model feature directly.</td><td class="example">"Virat Kohli"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>4</td><td>nationality</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Player's country. Indian players have different salary caps.</td><td class="example">"India", "Australia"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>5</td><td>is_overseas</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">Whether player is an overseas (non-Indian) player. Teams limited to 4 overseas per XI.</td><td class="example">True / False</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>6</td><td>age_at_auction</td><td><span class="type-badge type-int">int</span></td><td class="desc">Player age in years at the time of the auction.</td><td class="example">28, 34, 21</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>7</td><td>player_role</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Primary role. One of: Batsman, Bowler, All-rounder, WK-Batsman.</td><td class="example">"All-rounder"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BATTING STATS -->
+  <div class="section s3">
+    <div class="section-header">
+      <div class="section-dot" style="background:#f59e0b"></div>
+      <div class="section-title" style="color:#f59e0b">🏏 Batting Statistics (Prior Season)</div>
+      <div class="section-count">9 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>8</td><td>bat_matches</td><td><span class="type-badge type-int">int</span></td><td class="desc">Matches played as batter in prior IPL season.</td><td class="example">14, 8, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>9</td><td>bat_runs</td><td><span class="type-badge type-int">int</span></td><td class="desc">Total runs scored in prior IPL season.</td><td class="example">630, 210, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>10</td><td>bat_average</td><td><span class="type-badge type-float">float</span></td><td class="desc">Batting average (runs / dismissals). NaN if never batted.</td><td class="example">45.2, 28.7</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>11</td><td>bat_strike_rate</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs per 100 balls faced. Critical T20 metric.</td><td class="example">142.5, 88.3</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>12</td><td>bat_fifties</td><td><span class="type-badge type-int">int</span></td><td class="desc">Number of fifty-plus scores.</td><td class="example">4, 1, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>13</td><td>bat_hundreds</td><td><span class="type-badge type-int">int</span></td><td class="desc">Number of century scores (rare in T20 but impactful signal).</td><td class="example">1, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>14</td><td>bat_boundary_pct</td><td><span class="type-badge type-float">float</span></td><td class="desc">Percentage of runs from fours and sixes.</td><td class="example">62.4, 48.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>15</td><td>bat_position</td><td><span class="type-badge type-float">float</span></td><td class="desc">Average batting position (1=opener). Signals role value.</td><td class="example">1.3, 5.8, 7.2</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>16</td><td>career_ipl_runs</td><td><span class="type-badge type-int">int</span></td><td class="desc">Cumulative career IPL runs (all seasons combined).</td><td class="example">5412, 820</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOWLING STATS -->
+  <div class="section s4">
+    <div class="section-header">
+      <div class="section-dot" style="background:#ec4899"></div>
+      <div class="section-title" style="color:#ec4899">🎳 Bowling Statistics (Prior Season)</div>
+      <div class="section-count">8 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>17</td><td>bowl_matches</td><td><span class="type-badge type-int">int</span></td><td class="desc">Matches bowled in prior IPL season.</td><td class="example">14, 6, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>18</td><td>bowl_wickets</td><td><span class="type-badge type-int">int</span></td><td class="desc">Total wickets taken in prior IPL season.</td><td class="example">21, 8, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>19</td><td>bowl_economy</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs conceded per over. Lower = better for bowler value.</td><td class="example">7.2, 9.8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>20</td><td>bowl_average</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs per wicket. Lower = better.</td><td class="example">22.4, 35.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>21</td><td>bowl_strike_rate</td><td><span class="type-badge type-float">float</span></td><td class="desc">Balls per wicket. Lower = more impactful bowler.</td><td class="example">16.2, 24.5</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>22</td><td>bowl_type</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Bowling style: Fast, Medium, Spin (Off/Leg). Affects team need fit.</td><td class="example">"Fast", "Leg-spin"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>23</td><td>bowl_dot_ball_pct</td><td><span class="type-badge type-float">float</span></td><td class="desc">Percentage of deliveries that are dot balls. High-impact T20 metric.</td><td class="example">38.5, 22.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>24</td><td>career_ipl_wickets</td><td><span class="type-badge type-int">int</span></td><td class="desc">Cumulative career IPL wickets across all seasons.</td><td class="example">187, 42</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AUCTION CONTEXT -->
+  <div class="section s5">
+    <div class="section-header">
+      <div class="section-dot" style="background:#a855f7"></div>
+      <div class="section-title" style="color:#a855f7">📋 Auction Context</div>
+      <div class="section-count">8 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>25</td><td>ipl_year</td><td><span class="type-badge type-int">int</span></td><td class="desc">IPL season year. Captures salary inflation over time.</td><td class="example">2018, 2022, 2025</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>26</td><td>base_price_cr</td><td><span class="type-badge type-float">float</span></td><td class="desc">Player's reserve/base price set before auction (in Crore).</td><td class="example">2.0, 0.20, 0.50</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>27</td><td>is_retained</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">Whether the player was directly retained (not auctioned).</td><td class="example">True / False</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>28</td><td>is_rtm</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">Whether the team used Right To Match (RTM) card to acquire.</td><td class="example">True / False</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>29</td><td>prev_team</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Team the player played for in the previous IPL season.</td><td class="example">"Mumbai Indians"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>30</td><td>team_name</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Team that bought the player at this auction.</td><td class="example">"Chennai Super Kings"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>31</td><td>times_auctioned</td><td><span class="type-badge type-int">int</span></td><td class="desc">Number of IPL auctions the player has previously entered.</td><td class="example">1, 5, 10</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>32</td><td>prev_auction_price_cr</td><td><span class="type-badge type-float">float</span></td><td class="desc">Auction price in the immediately preceding season. Strong predictor.</td><td class="example">8.0, 1.5, NaN</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TEAM NEED / MARKET -->
+  <div class="section s6">
+    <div class="section-header">
+      <div class="section-dot" style="background:#10b981"></div>
+      <div class="section-title" style="color:#10b981">🏟️ Team Need & Market Features</div>
+      <div class="section-count">6 columns</div>
+      <div class="section-note">Engineered features capturing auction dynamics</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>33</td><td>team_purse_remaining_cr</td><td><span class="type-badge type-float">float</span></td><td class="desc">Remaining auction budget of the buying team at time of purchase.</td><td class="example">45.2, 12.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>34</td><td>team_overseas_slots_used</td><td><span class="type-badge type-int">int</span></td><td class="desc">How many overseas slots the team had already filled before this bid.</td><td class="example">0, 1, 2, 3</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>35</td><td>role_scarcity_score</td><td><span class="type-badge type-float">float</span></td><td class="desc">How scarce the player's role was in that auction year (engineered). Higher = more competition for this role.</td><td class="example">0.82, 0.31</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>36</td><td>num_bidding_teams</td><td><span class="type-badge type-int">int</span></td><td class="desc">Number of franchises that actively bid for this player.</td><td class="example">1, 3, 8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>37</td><td>inflation_index</td><td><span class="type-badge type-float">float</span></td><td class="desc">Year-over-year price inflation index for IPL auctions (normalized to 2015=1.0).</td><td class="example">1.0, 1.34, 1.87</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>38</td><td>team_prev_season_rank</td><td><span class="type-badge type-int">int</span></td><td class="desc">Buying team's finishing position in the previous IPL season (1=winner).</td><td class="example">1, 5, 8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GNN-SPECIFIC -->
+  <div class="section s7">
+    <div class="section-header">
+      <div class="section-dot" style="background:#10b981"></div>
+      <div class="section-title" style="color:#10b981">🕸️ GNN-Specific Graph Features</div>
+      <div class="section-count">5 columns</div>
+      <div class="section-note">Node & edge features for graph construction</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>39</td><td>player_embedding</td><td><span class="type-badge type-list">list[float]</span></td><td class="desc">Pre-trained dense vector (e.g., from stats autoencoder or player2vec). Dim = 64.</td><td class="example">[0.12, -0.43, ...]</td><td><div class="model-tags"><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>40</td><td>teammate_history_ids</td><td><span class="type-badge type-list">list[str]</span></td><td class="desc">List of player_ids this player has shared a team with across all seasons. Defines player–player edges.</td><td class="example">["rohit_sharma","jadeja"]</td><td><div class="model-tags"><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>41</td><td>edge_weight_teammate</td><td><span class="type-badge type-float">float</span></td><td class="desc">Strength of teammate relationship edge (e.g., seasons played together / total seasons).</td><td class="example">0.7, 0.2</td><td><div class="model-tags"><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>42</td><td>team_node_id</td><td><span class="type-badge type-str">str</span></td><td class="desc">Team node identifier for bipartite player–team graph edges.</td><td class="example">"csk", "mi", "rcb"</td><td><div class="model-tags"><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>43</td><td>graph_pagerank_score</td><td><span class="type-badge type-float">float</span></td><td class="desc">PageRank centrality of player node in historical co-team graph. High = widely connected "star" player.</td><td class="example">0.0089, 0.0012</td><td><div class="model-tags"><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gnn-note">
+      🕸️ <strong>GNN Graph Structure:</strong> Construct a <strong>heterogeneous graph</strong> with two node types — <em>Player</em> and <em>Team</em>. Add edges for: (1) <strong>Player↔Player</strong> — shared seasons as teammates; (2) <strong>Player→Team</strong> — player was auctioned to this team; (3) <strong>Player↔Player</strong> — same nationality / bowling type (homophily edges). Message passing aggregates neighborhood signals so a player's auction price is influenced by the prices of similar or co-occurring players.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
