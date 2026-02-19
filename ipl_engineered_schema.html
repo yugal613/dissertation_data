@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPL Engineered Feature Schema</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #f97316;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --accent4: #a855f7;
+    --accent5: #ec4899;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --tag-bg: #1a1a28;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease forwards;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before { content: '//'; opacity: 0.5; }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 600px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stat-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .section {
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .section-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--tag-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .section-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+  }
+
+  thead th:first-child { color: var(--accent); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  td {
+    padding: 14px 16px;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  td:nth-child(2) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .type-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .type-str   { background: rgba(59,130,246,0.15);  color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+  .type-int   { background: rgba(16,185,129,0.15);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+  .type-float { background: rgba(249,115,22,0.15);  color: #fdba74; border: 1px solid rgba(249,115,22,0.2); }
+  .type-bool  { background: rgba(168,85,247,0.15);  color: #d8b4fe; border: 1px solid rgba(168,85,247,0.2); }
+  .type-cat   { background: rgba(236,72,153,0.15);  color: #f9a8d4; border: 1px solid rgba(236,72,153,0.2); }
+  .type-list  { background: rgba(234,179,8,0.15);   color: #fde68a; border: 1px solid rgba(234,179,8,0.2); }
+
+  .model-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .mtag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .ml  { background: rgba(59,130,246,0.2);  color: #93c5fd; }
+  .dl  { background: rgba(249,115,22,0.2);  color: #fdba74; }
+  .gnn { background: rgba(16,185,129,0.2);  color: #6ee7b7; }
+
+  .example {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  .desc { color: #94a3b8; font-size: 12px; }
+
+  tr.target td { background: rgba(249,115,22,0.05); }
+  tr.target td:first-child { color: #fb923c; }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    animation: fadeUp 0.5s ease 0.3s both;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+
+  .gnn-note {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #6ee7b7;
+    line-height: 1.6;
+  }
+  .gnn-note strong { color: #34d399; }
+
+  .target-note {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(249,115,22,0.05);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #fdba74;
+    line-height: 1.6;
+  }
+  .target-note strong { color: #fb923c; }
+  .target-note code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255,255,255,0.07);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .eng-note {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(59,130,246,0.05);
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #93c5fd;
+    line-height: 1.6;
+  }
+  .eng-note strong { color: #60a5fa; }
+  .eng-note code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255,255,255,0.07);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px);} to { opacity:1; transform:none;} }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none;} }
+
+  .s1 { animation-delay: 0.3s; }
+  .s2 { animation-delay: 0.4s; }
+  .s3 { animation-delay: 0.5s; }
+  .s4 { animation-delay: 0.6s; }
+  .s5 { animation-delay: 0.7s; }
+  .s6 { animation-delay: 0.8s; }
+  .s7 { animation-delay: 0.85s; }
+  .s8 { animation-delay: 0.9s; }
+  .s9 { animation-delay: 0.95s; }
+  .s10{ animation-delay: 1.0s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Feature Engineering Schema · ipl_features_engineered.xlsx</div>
+    <h1>Engineered Dataframe for<br><span>IPL Auction Price Prediction</span></h1>
+    <p class="subtitle">100-column ML-ready schema built from real IPL data (2015–2025). All 70 engineered features derived directly from batting, bowling and auction stats using pandas — no external data required.</p>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">100</div><div class="stat-label">Total Columns</div></div>
+    <div class="stat"><div class="stat-num">30</div><div class="stat-label">Original Columns</div></div>
+    <div class="stat"><div class="stat-num">70</div><div class="stat-label">Engineered Features</div></div>
+    <div class="stat"><div class="stat-num">1820</div><div class="stat-label">Player-Season Rows</div></div>
+    <div class="stat"><div class="stat-num">11</div><div class="stat-label">IPL Seasons</div></div>
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">Feature Groups</div></div>
+    <div class="stat"><div class="stat-num">1</div><div class="stat-label">Target Variable</div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="mtag ml">ML</span> Traditional ML (XGBoost, LightGBM, RF)</div>
+    <div class="legend-item"><span class="mtag dl">DL</span> Deep Learning (MLP, LSTM, Transformer)</div>
+    <div class="legend-item"><span class="mtag gnn">GNN</span> Graph Neural Network</div>
+    <div class="legend-item"><span class="type-badge type-str">str</span> String</div>
+    <div class="legend-item"><span class="type-badge type-float">float</span> Float</div>
+    <div class="legend-item"><span class="type-badge type-int">int</span> Integer</div>
+    <div class="legend-item"><span class="type-badge type-bool">bool</span> Boolean</div>
+    <div class="legend-item"><span class="type-badge type-cat">cat</span> Categorical</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S1 · TARGET VARIABLE
+  ═══════════════════════════════════════════ -->
+  <div class="section s1">
+    <div class="section-header">
+      <div class="section-dot" style="background:#f97316"></div>
+      <div class="section-title" style="color:#f97316">🎯 Target Variable</div>
+      <div class="section-count">2 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr class="target">
+            <td>1</td><td>amount_cr</td>
+            <td><span class="type-badge type-float">float</span></td>
+            <td class="desc">Auction price in Crore INR. Parsed from raw <code style="font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.07);padding:1px 4px;border-radius:3px;font-size:11px">Amount</code> string — handles "9.75 crore", "75 Lacs", "200 Lacs" formats. Raw regression target before log transform.</td>
+            <td class="example">12.5, 0.75, 2.4</td>
+            <td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td>
+          </tr>
+          <tr class="target">
+            <td>2</td><td>log_amount</td>
+            <td><span class="type-badge type-float">float</span></td>
+            <td class="desc"><strong>Primary model target.</strong> log1p(amount_cr). Normalises the heavily right-skewed auction price distribution. Recover with expm1(prediction) after inference.</td>
+            <td class="example">2.61, 0.64, 1.26</td>
+            <td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="target-note">
+      💡 <strong>Tip:</strong> Train on <code>log_amount</code>, then <code>expm1(ŷ)</code> to recover crore values. Also consider a two-stage model — (1) binary classifier for <code>is_sold</code>, then (2) regressor on sold players only. Use <code>price_tier</code> for multi-class classification experiments.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S2 · IDENTITY & ORIGINAL COLUMNS
+  ═══════════════════════════════════════════ -->
+  <div class="section s2">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3b82f6"></div>
+      <div class="section-title" style="color:#3b82f6">🪪 Player Identity</div>
+      <div class="section-count">6 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3</td><td>player_id</td><td><span class="type-badge type-str">str</span></td><td class="desc">Unique player ID from auction file (e.g. P0001). Node ID for GNN graph construction.</td><td class="example">"P0001", "P0589"</td><td><div class="model-tags"><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>4</td><td>player_name</td><td><span class="type-badge type-str">str</span></td><td class="desc">Full player name. Used for lookup, joins, and display — not fed directly to models.</td><td class="example">"Virat Kohli"</td><td><div class="model-tags"></div></td></tr>
+          <tr><td>5</td><td>team_id</td><td><span class="type-badge type-str">str</span></td><td class="desc">Team identifier (T001–T015). Team node ID for bipartite Player→Team graph edges.</td><td class="example">"T001", "T005"</td><td><div class="model-tags"><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>6</td><td>team_name_full</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Full franchise name. Encode as one-hot or learned embedding for ML/DL models.</td><td class="example">"Chennai Super Kings"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>7</td><td>team_abbrev</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Short team code from the stats source files. Redundant with team_name_full — use one or the other.</td><td class="example">"CSK", "MI", "RCB"</td><td><div class="model-tags"><span class="mtag ml">ML</span></div></td></tr>
+          <tr><td>8</td><td>year</td><td><span class="type-badge type-int">int</span></td><td class="desc">IPL season year (2015–2025). Captures salary inflation, era effects, and team restructuring events.</td><td class="example">2015, 2022, 2025</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S3 · BATTING STATISTICS (ORIGINAL)
+  ═══════════════════════════════════════════ -->
+  <div class="section s3">
+    <div class="section-header">
+      <div class="section-dot" style="background:#f59e0b"></div>
+      <div class="section-title" style="color:#f59e0b">🏏 Batting Statistics (Raw)</div>
+      <div class="section-count">12 columns</div>
+      <div class="section-note">Orange Cap leaderboard data · NaN for pure bowlers</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>9</td><td>Runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Total runs scored in the season. Primary batting volume signal.</td><td class="example">562, 973, 210</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>10</td><td>Mat_bat</td><td><span class="type-badge type-float">float</span></td><td class="desc">Matches played (batting). Denominator for per-match rate features.</td><td class="example">14, 16</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>11</td><td>Inns_bat</td><td><span class="type-badge type-float">float</span></td><td class="desc">Innings batted. Combined with NO gives true dismissal count.</td><td class="example">14, 13</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>12</td><td>NO</td><td><span class="type-badge type-float">float</span></td><td class="desc">Not-out count. High value signals finisher / lower-order role.</td><td class="example">0, 1, 5</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>13</td><td>HS</td><td><span class="type-badge type-str">str</span></td><td class="desc">Highest score (raw string, e.g. "91*" for not-out). Use <strong>hs_numeric</strong> and <strong>hs_not_out</strong> for modelling.</td><td class="example">"91", "133*"</td><td><div class="model-tags"></div></td></tr>
+          <tr><td>14</td><td>Avg_bat</td><td><span class="type-badge type-str">str</span></td><td class="desc">Batting average (raw string). "-" when player was never dismissed. Use <strong>avg_bat_num</strong> for modelling.</td><td class="example">"43.23", "-"</td><td><div class="model-tags"></div></td></tr>
+          <tr><td>15</td><td>BF</td><td><span class="type-badge type-float">float</span></td><td class="desc">Balls faced. Base for strike-rate, dot ball, and efficiency features.</td><td class="example">359, 441</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>16</td><td>SR_bat</td><td><span class="type-badge type-float">float</span></td><td class="desc">Batting strike rate (runs per 100 balls). Critical T20 metric — drives auction premium.</td><td class="example">156.5, 122.4</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>17</td><td>100</td><td><span class="type-badge type-float">float</span></td><td class="desc">Centuries scored. Rare in T20 but a strong "big innings" signal.</td><td class="example">0, 1, 4</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>18</td><td>50</td><td><span class="type-badge type-float">float</span></td><td class="desc">Half-centuries scored.</td><td class="example">7, 3, 0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>19</td><td>4s</td><td><span class="type-badge type-float">float</span></td><td class="desc">Total fours hit. Input for boundary-based features.</td><td class="example">65, 83</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>20</td><td>6s</td><td><span class="type-badge type-float">float</span></td><td class="desc">Total sixes hit. Strong signal for power-hitter premium at auction.</td><td class="example">21, 38</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S4 · BOWLING STATISTICS (ORIGINAL)
+  ═══════════════════════════════════════════ -->
+  <div class="section s4">
+    <div class="section-header">
+      <div class="section-dot" style="background:#ec4899"></div>
+      <div class="section-title" style="color:#ec4899">🎳 Bowling Statistics (Raw)</div>
+      <div class="section-count">10 columns</div>
+      <div class="section-note">Purple Cap leaderboard data · NaN for pure batsmen</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>21</td><td>Wkts</td><td><span class="type-badge type-float">float</span></td><td class="desc">Total wickets taken in the season. Primary bowling volume signal.</td><td class="example">23, 27, 8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>22</td><td>Mat_bowl</td><td><span class="type-badge type-float">float</span></td><td class="desc">Matches played (bowling). Denominator for per-match bowling rate features.</td><td class="example">17, 14</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>23</td><td>Inns_bowl</td><td><span class="type-badge type-float">float</span></td><td class="desc">Innings bowled.</td><td class="example">17, 14</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>24</td><td>Ov</td><td><span class="type-badge type-float">float</span></td><td class="desc">Overs bowled. Multiply by 6 for total balls. Base for rate features.</td><td class="example">66.0, 52.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>25</td><td>Runs_bowl</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs conceded while bowling.</td><td class="example">490, 401</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>26</td><td>BBI</td><td><span class="type-badge type-str">str</span></td><td class="desc">Best bowling innings — stored as Runs/Wickets (e.g. "41/4" = 41 runs, 4 wkts). Use <strong>bbi_wkts</strong> and <strong>bbi_runs</strong>.</td><td class="example">"41/4", "28/2"</td><td><div class="model-tags"></div></td></tr>
+          <tr><td>27</td><td>Avg_bowl</td><td><span class="type-badge type-float">float</span></td><td class="desc">Bowling average (runs per wicket). Lower = better.</td><td class="example">21.3, 35.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>28</td><td>Econ</td><td><span class="type-badge type-float">float</span></td><td class="desc">Economy rate (runs per over). Critical T20 metric — lower = better bowler value.</td><td class="example">7.42, 8.15</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>29</td><td>SR_bowl</td><td><span class="type-badge type-float">float</span></td><td class="desc">Bowling strike rate (balls per wicket). Lower = more impactful bowler.</td><td class="example">17.2, 14.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>30</td><td>4w / 5w</td><td><span class="type-badge type-float">float</span></td><td class="desc">Four-wicket and five-wicket haul counts. Rare but powerful signal for premium bowlers.</td><td class="example">0, 1, 3</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S5 · PARSE HELPERS
+  ═══════════════════════════════════════════ -->
+  <div class="section s5">
+    <div class="section-header">
+      <div class="section-dot" style="background:#a855f7"></div>
+      <div class="section-title" style="color:#a855f7">🔧 Parse Helpers</div>
+      <div class="section-count">6 columns</div>
+      <div class="section-note">Numeric conversions of raw string fields</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>31</td><td>amount_cr</td><td><span class="type-badge type-float">float</span></td><td class="desc">Amount parsed to float crores. Regex handles "9.75 crore", "75 Lacs", "200 Lacs". Also the target variable.</td><td class="example">9.75, 0.75, 2.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>32</td><td>hs_numeric</td><td><span class="type-badge type-float">float</span></td><td class="desc">Highest score as float — strips trailing * not-out marker from the HS string.</td><td class="example">91.0, 133.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>33</td><td>hs_not_out</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">1 if the player was not-out on their HS. Signals finishing ability at the death.</td><td class="example">0, 1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>34</td><td>avg_bat_num</td><td><span class="type-badge type-float">float</span></td><td class="desc">Batting average as float. Raw Avg_bat column contains "-" for never-dismissed — treated as NaN here.</td><td class="example">43.23, NaN</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>35</td><td>bbi_wkts</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wickets taken in best bowling innings. Parsed from BBI "Runs/Wkts" format.</td><td class="example">4.0, 2.0, 5.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>36</td><td>bbi_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs conceded in best bowling innings. Combine with bbi_wkts to compute best-spell economy.</td><td class="example">41.0, 19.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S6 · BATTING FEATURES (ENGINEERED)
+  ═══════════════════════════════════════════ -->
+  <div class="section s6">
+    <div class="section-header">
+      <div class="section-dot" style="background:#f59e0b"></div>
+      <div class="section-title" style="color:#f59e0b">🏏 Batting Features (Engineered)</div>
+      <div class="section-count">20 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>37</td><td>dismissals</td><td><span class="type-badge type-float">float</span></td><td class="desc">Inns_bat − NO. True times out — correct denominator for average calculations.</td><td class="example">13, 11, 4</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>38</td><td>runs_per_match</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs / Mat_bat. Consistent season contribution per game, regardless of matches played.</td><td class="example">40.1, 60.8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>39</td><td>innings_per_match</td><td><span class="type-badge type-float">float</span></td><td class="desc">Inns_bat / Mat_bat. Near 1.0 = top-order batter. Lower values indicate tail-end or unused slot.</td><td class="example">0.93, 0.75</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>40</td><td>not_out_rate</td><td><span class="type-badge type-float">float</span></td><td class="desc">NO / Inns_bat. High = finisher / lower-order specialist who bats without getting dismissed.</td><td class="example">0.07, 0.36</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>41</td><td>balls_per_dismissal</td><td><span class="type-badge type-float">float</span></td><td class="desc">BF / dismissals. How long a batter survives per innings — measures application.</td><td class="example">27.6, 40.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>42</td><td>log_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">log1p(Runs). Normalises the skewed run distribution for tree and neural models.</td><td class="example">6.33, 6.88</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>43</td><td>boundary_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">(4s × 4) + (6s × 6). Total runs scored purely from boundaries.</td><td class="example">374, 484</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>44</td><td>boundary_pct</td><td><span class="type-badge type-float">float</span></td><td class="desc">boundary_runs / Runs. High = boundary-dependent scorer. Important signal for team-fit analysis.</td><td class="example">0.62, 0.48</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>45</td><td>non_boundary_pct</td><td><span class="type-badge type-float">float</span></td><td class="desc">1 − boundary_pct. Captures running between wickets and rotating strike.</td><td class="example">0.38, 0.52</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>46</td><td>six_to_four_ratio</td><td><span class="type-badge type-float">float</span></td><td class="desc">6s / (4s + 1). High value = pure power hitter. Used as a role detection signal.</td><td class="example">0.32, 0.97</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>47</td><td>dot_ball_est</td><td><span class="type-badge type-float">float</span></td><td class="desc">Estimated dot balls faced (BF − Runs/1.5). Proxy for opposition pressure against this batter.</td><td class="example">183.0, 212.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>48</td><td>dot_ball_pct_bat</td><td><span class="type-badge type-float">float</span></td><td class="desc">dot_ball_est / BF. High = batter struggles to score freely — reduces perceived value.</td><td class="example">0.51, 0.38</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>49</td><td>milestone_pct</td><td><span class="type-badge type-float">float</span></td><td class="desc">(100s + 50s) / Inns_bat. % of innings with a significant score. High = consistent big performer.</td><td class="example">0.50, 0.31</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>50</td><td>fifty_conv_rate</td><td><span class="type-badge type-float">float</span></td><td class="desc">100s / (100s + 50s). How often a batter converts 50s to 100s. High = match-winning mentality.</td><td class="example">0.13, 0.36</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>51</td><td>hs_to_avg_ratio</td><td><span class="type-badge type-float">float</span></td><td class="desc">hs_numeric / avg_bat_num. High = one-knock wonder (inconsistent). Low = level, consistent scorer.</td><td class="example">2.1, 4.8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>52</td><td>avg_excl_hs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Average with best innings removed. True consistency check — drops sharply for one-knock wonders.</td><td class="example">30.1, 52.4</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>53</td><td>t20_impact_score</td><td><span class="type-badge type-float">float</span></td><td class="desc">(SR_bat / 100) × avg_bat_num. Classic T20 composite — rewards both aggression and consistency simultaneously.</td><td class="example">70.5, 123.8</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>54</td><td>bat_value_score</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs × SR_bat / 10000. Single metric combining volume and aggression.</td><td class="example">88.0, 148.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>55</td><td>is_finisher</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">1 if not_out_rate > 0.35. Finisher / death-overs specialist flag. Commands significant auction premium.</td><td class="example">0, 1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>56</td><td>is_power_hitter</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">1 if SR_bat > 150 AND six_to_four_ratio > 0.5. Pure explosive hitter flag.</td><td class="example">0, 1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S7 · BOWLING FEATURES (ENGINEERED)
+  ═══════════════════════════════════════════ -->
+  <div class="section s7">
+    <div class="section-header">
+      <div class="section-dot" style="background:#ec4899"></div>
+      <div class="section-title" style="color:#ec4899">🎳 Bowling Features (Engineered)</div>
+      <div class="section-count">13 columns</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>57</td><td>balls_bowled</td><td><span class="type-badge type-float">float</span></td><td class="desc">Ov × 6. Total deliveries bowled. Base for dot-ball rate calculations.</td><td class="example">396, 312</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>58</td><td>wickets_per_match</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wkts / Mat_bowl. Normalises wicket count to per-game impact — fairer for injury-shortened seasons.</td><td class="example">1.35, 1.57</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>59</td><td>wickets_per_over</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wkts / Ov. True wicket-taking rate per over bowled.</td><td class="example">0.35, 0.40</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>60</td><td>overs_per_match</td><td><span class="type-badge type-float">float</span></td><td class="desc">Ov / Mat_bowl. Bowling workload per game — high value = trusted, high-usage key bowler.</td><td class="example">3.88, 3.71</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>61</td><td>log_wickets</td><td><span class="type-badge type-float">float</span></td><td class="desc">log1p(Wkts). Normalised wicket count for tree and neural models.</td><td class="example">3.18, 3.30</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>62</td><td>dot_ball_pct_bowl</td><td><span class="type-badge type-float">float</span></td><td class="desc">Approx fraction of deliveries that are dot balls. High = wicket-taking and/or economical bowler.</td><td class="example">0.38, 0.44</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>63</td><td>wicket_impact_score</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wkts × (1/Avg_bowl) × (1/Econ). Combined effectiveness — heavily penalises expensive, wicket-less bowlers.</td><td class="example">0.0051, 0.0038</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>64</td><td>bbi_wkts</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wickets in best spell (parsed from BBI). Ceiling signal for match-winning ability.</td><td class="example">4.0, 5.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>65</td><td>bbi_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs conceded in best spell. Used with bbi_wkts to compute best-spell economy.</td><td class="example">19.0, 41.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>66</td><td>bbi_economy</td><td><span class="type-badge type-float">float</span></td><td class="desc">bbi_runs / (bbi_wkts × 4). Economy rate in best spell. Low = devastating when at peak form.</td><td class="example">2.56, 3.25</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>67</td><td>haul_rate</td><td><span class="type-badge type-float">float</span></td><td class="desc">(4w + 5w) / Mat_bowl. How often the bowler produces a match-winning multi-wicket haul per game.</td><td class="example">0.06, 0.12</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>68</td><td>multi_wicket_pct</td><td><span class="type-badge type-float">float</span></td><td class="desc">(4w + 5w) / Inns_bowl. % of bowling innings with a 4+ wicket haul.</td><td class="example">0.06, 0.07</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>69</td><td>five_wicket_flag</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">1 if player has taken at least one 5-wicket haul. Rare event — strong signal for elite bowler premium.</td><td class="example">0, 1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S8 · COMBINED + LEAGUE + AUCTION
+  ═══════════════════════════════════════════ -->
+  <div class="section s8">
+    <div class="section-header">
+      <div class="section-dot" style="background:#10b981"></div>
+      <div class="section-title" style="color:#10b981">⚡ Combined, League-Relative & Auction Features</div>
+      <div class="section-count">15 columns</div>
+      <div class="section-note">Contextual features capturing player value vs peers</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>70</td><td>is_allrounder</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">1 if Runs > 100 AND Wkts > 5. All-rounders typically command the largest auction premiums.</td><td class="example">0, 1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>71</td><td>bat_bowl_balance</td><td><span class="type-badge type-float">float</span></td><td class="desc">avg_bat_num / Avg_bowl. &gt;1 = more batsman. &lt;1 = more bowler. Profiles an all-rounder's primary skillset.</td><td class="example">1.38, 0.81</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>72</td><td>dual_value_score</td><td><span class="type-badge type-float">float</span></td><td class="desc">t20_impact_score + wicket_impact_score. Combined output from both departments — only set for all-rounders (NaN for specialists).</td><td class="example">72.3, 98.5</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>73</td><td>sr_vs_league</td><td><span class="type-badge type-float">float</span></td><td class="desc">SR_bat − season mean SR. Era-adjusted aggression — +ve = more aggressive than all peers that year.</td><td class="example">+39.7, −8.2</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>74</td><td>avg_vs_league</td><td><span class="type-badge type-float">float</span></td><td class="desc">avg_bat_num − season mean avg. Era-adjusted consistency — +ve = outperforming league peers.</td><td class="example">+24.4, −5.1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>75</td><td>econ_vs_league</td><td><span class="type-badge type-float">float</span></td><td class="desc">Econ − season mean Econ. −ve = cheaper than peers. Critical for bowler valuation relative to era.</td><td class="example">−0.85, +1.27</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>76</td><td>avg_bowl_vs_league</td><td><span class="type-badge type-float">float</span></td><td class="desc">Avg_bowl − season mean. −ve = fewer runs per wicket than peers (better bowler).</td><td class="example">−8.3, +4.6</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>77</td><td>runs_percentile</td><td><span class="type-badge type-float">float</span></td><td class="desc">Percentile rank of Runs within that season (0–1). 0.95 = top 5% scorer. Season-normalized batting rank.</td><td class="example">0.95, 0.62</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>78</td><td>wkts_percentile</td><td><span class="type-badge type-float">float</span></td><td class="desc">Percentile rank of Wkts within that season (0–1). 0.90 = top 10% wicket-taker.</td><td class="example">0.90, 0.55</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>79</td><td>price_per_run</td><td><span class="type-badge type-float">float</span></td><td class="desc">amount_cr / Runs. Cost-efficiency for batsmen. ⚠ Post-hoc only — do not use as input feature for same row.</td><td class="example">0.011, 0.031</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>80</td><td>price_per_wicket</td><td><span class="type-badge type-float">float</span></td><td class="desc">amount_cr / Wkts. Cost-efficiency for bowlers. ⚠ Post-hoc only — use only for analysis, not prediction input.</td><td class="example">0.39, 0.74</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>81</td><td>price_vs_sr</td><td><span class="type-badge type-float">float</span></td><td class="desc">amount_cr / SR_bat. Was the premium justified by strike rate? ⚠ Post-hoc analysis column.</td><td class="example">0.064, 0.11</td><td><div class="model-tags"><span class="mtag ml">ML</span></div></td></tr>
+          <tr><td>82</td><td>is_big_buy</td><td><span class="type-badge type-bool">bool</span></td><td class="desc">1 if amount_cr &gt; 10 crore. Premium player flag — useful as classification target or interaction feature.</td><td class="example">0, 1</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>83</td><td>price_tier</td><td><span class="type-badge type-cat">cat</span></td><td class="desc">Budget (&lt;0.5Cr) / Low (0.5–2Cr) / Mid (2–6Cr) / High (6–12Cr) / Premium (&gt;12Cr). Use as multi-class classification target.</td><td class="example">"Mid (2-6Cr)"</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>84</td><td>log_amount</td><td><span class="type-badge type-float">float</span></td><td class="desc"><strong>Primary regression target.</strong> log1p(amount_cr). Right-skew normalised for modelling. Recover with expm1() post-inference.</td><td class="example">2.61, 0.64</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="eng-note">
+      📌 <strong>Why season-relative features matter:</strong> A SR of 140 in 2015 (league avg 117) is very different from SR 140 in 2025 (league avg 134). <code>sr_vs_league</code> and <code>econ_vs_league</code> correct for era inflation — without them, models will over-reward 2015 batsmen for stats that are now routine.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       S9 · TIME-SERIES & CAREER FEATURES
+  ═══════════════════════════════════════════ -->
+  <div class="section s9">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3b82f6"></div>
+      <div class="section-title" style="color:#3b82f6">📅 Time-Series & Career Features</div>
+      <div class="section-count">18 columns</div>
+      <div class="section-note">Computed per player sorted by year</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Column Name</th><th>Type</th><th>Description</th><th>Example</th><th>Used By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>85</td><td>seasons_played</td><td><span class="type-badge type-int">int</span></td><td class="desc">Total IPL seasons the player appears in the dataset. Proxy for experience and longevity premium.</td><td class="example">3, 8, 12</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>86</td><td>career_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Cumulative runs up to and including this season. Captures long-term batting pedigree.</td><td class="example">1820, 5412</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>87</td><td>career_wickets</td><td><span class="type-badge type-float">float</span></td><td class="desc">Cumulative wickets up to and including this season. Long-term bowling pedigree signal.</td><td class="example">87, 187</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>88</td><td>peak_season_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Best single-season run tally across entire career. Signals ceiling performance.</td><td class="example">973, 562</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>89</td><td>peak_season_wkts</td><td><span class="type-badge type-float">float</span></td><td class="desc">Best single-season wicket tally. Ceiling signal for bowlers.</td><td class="example">32, 27</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>90</td><td>career_consistency</td><td><span class="type-badge type-float">float</span></td><td class="desc">Std deviation of Runs across all seasons. Low = reliable producer every year — reduces uncertainty at auction.</td><td class="example">148.2, 42.7</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>91</td><td>prev_runs</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs in the immediately prior season. NaN for a player's first season in data.</td><td class="example">505, 973</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>92</td><td>prev_wkts</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wickets in the immediately prior season. NaN for a bowler's first season in data.</td><td class="example">21, 27</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>93</td><td>prev_sr_bat</td><td><span class="type-badge type-float">float</span></td><td class="desc">Strike rate in prior season. Combined with SR_bat detects if batter is trending more or less aggressive.</td><td class="example">130.8, 152.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>94</td><td>prev_econ</td><td><span class="type-badge type-float">float</span></td><td class="desc">Economy rate in prior season. Combined with Econ detects improving or declining bowler form.</td><td class="example">7.42, 8.15</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>95</td><td>prev_amount_cr</td><td><span class="type-badge type-float">float</span></td><td class="desc"><strong>Strongest single predictor.</strong> Auction price in the previous season. Anchors franchises' bids on prior market valuation.</td><td class="example">12.5, 8.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>96</td><td>runs_yoy</td><td><span class="type-badge type-float">float</span></td><td class="desc">Runs − prev_runs. +ve = improving form. −ve = declining. Trend signal for franchise scouts.</td><td class="example">+411, −238</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>97</td><td>wkts_yoy</td><td><span class="type-badge type-float">float</span></td><td class="desc">Wkts − prev_wkts. +ve = improving. −ve = declining. Season-on-season bowling form trend.</td><td class="example">+4, −6</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>98</td><td>sr_trend</td><td><span class="type-badge type-float">float</span></td><td class="desc">SR_bat − prev_sr_bat. +ve = getting more aggressive. −ve = consolidating style.</td><td class="example">+9.2, −12.4</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>99</td><td>econ_trend</td><td><span class="type-badge type-float">float</span></td><td class="desc">Econ − prev_econ. −ve = getting cheaper (improving bowler). +ve = regression in form.</td><td class="example">−0.31, +0.85</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span></div></td></tr>
+          <tr><td>100</td><td>price_growth_yoy</td><td><span class="type-badge type-float">float</span></td><td class="desc">amount_cr − prev_amount_cr. Season-on-season change in auction valuation.</td><td class="example">+2.5, −4.0</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>101</td><td>bat_form_index</td><td><span class="type-badge type-float">float</span></td><td class="desc">0.6 × prev_runs + 0.4 × two_seasons_ago_runs. Weighted recent batting form — more predictive than single-lag alone.</td><td class="example">408.0, 612.5</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+          <tr><td>102</td><td>bowl_form_index</td><td><span class="type-badge type-float">float</span></td><td class="desc">0.6 × prev_wkts + 0.4 × two_seasons_ago_wkts. Weighted recent bowling form for auction forecasting.</td><td class="example">15.2, 22.6</td><td><div class="model-tags"><span class="mtag ml">ML</span><span class="mtag dl">DL</span><span class="mtag gnn">GNN</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gnn-note">
+      🕸️ <strong>GNN Graph Structure:</strong> Construct a <strong>heterogeneous graph</strong> with two node types — <em>Player</em> and <em>Team</em>. Add edges for: (1) <strong>Player↔Player</strong> — shared team_id + year (teammates); (2) <strong>Player→Team</strong> — player was acquired by this team that year. Node features: <code>[t20_impact_score, wicket_impact_score, prev_amount_cr, bat_form_index, bowl_form_index, sr_vs_league, econ_vs_league, seasons_played, is_allrounder, runs_percentile, wkts_percentile]</code>. Edge weights: proportion of seasons spent as co-teammates.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
